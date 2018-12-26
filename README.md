@@ -7,6 +7,7 @@ Final project -- Object recognition
 conda env create -f environment.yml
 
 # Load data :
+git clone https://github.com/rupy/PascalSentenceDataset.git
 python pascal_sentence_dataset.py
 
 # train/test split

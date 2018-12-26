@@ -10,7 +10,7 @@ from tqdm import tqdm
 num_category = 20
 
 N_train = 30
-N_test =-12
+N_test = 20
 
 
 if os.path.isdir('PascalSentenceDataset/validation_images/'):
