@@ -5,9 +5,13 @@ import torch.nn as nn
 import torch.optim as optim
 from torchvision import datasets
 from torch.autograd import Variable
-import torchvision.models as models
 import torch.nn.functional as F
+import torchvision.models as models
 import numpy as np
+
+
+num_classes = 20
+n_test = 20
 
 # Training settings
 parser = argparse.ArgumentParser(description='Final Project')
@@ -15,7 +19,7 @@ parser.add_argument('--data', type=str, default='PascalSentenceDataset', metavar
                     help="folder where data is located. train_images/ and val_images/ need to be found in the folder")
 parser.add_argument('--batch-size', type=int, default=64, metavar='B',
                     help='input batch size for training (default: 64)')
-parser.add_argument('--epochs', type=int, default=20, metavar='N',
+parser.add_argument('--epochs', type=int, default=5, metavar='N',
                     help='number of epochs to train (default: 10)')
 parser.add_argument('--lr', type=float, default=0.03, metavar='LR',
                     help='learning rate (default:)')
@@ -41,8 +45,6 @@ if not os.path.isdir(args.experiment):
 from data import data_transforms
 
 
-# train_idx, valid_idx = indices[split:], indices[:split]
-# sampler = torch.utils.data.sampler.SubsetRandomSampler(train_idx)
 train_loader = torch.utils.data.DataLoader(
     datasets.ImageFolder(args.data + '/dataset',
                          transform=data_transforms),
@@ -51,30 +53,14 @@ train_loader = torch.utils.data.DataLoader(
 val_loader = torch.utils.data.DataLoader(
     datasets.ImageFolder(args.data + '/validation_images',
                          transform=data_transforms),
-    batch_size=20, shuffle=False, num_workers=1)
+    batch_size=n_test, shuffle=False, num_workers=1)
 
 # Neural network and optimizer
-# We define neural net in model.py so that it can be reused by the evaluate.py script
-
-
-num_classes = 20
-
-#model = models.squeezenet1_1(pretrained=True)
 model = models.alexnet(pretrained=True)
-
 for param in model.parameters():
     param.requires_grad = False
-# Replace the model classifier
-#model.classifier[1] = nn.Conv2d(512, num_classes, kernel_size=(1,1), stride=(1,1))
-
-# model.fc = nn.Sequential(nn.Linear(num_ftrs, 200),nn.ReLU(True), nn.Linear(200, num_classes))
-softmax = nn.Softmax(dim=1)
-model.classifier[6] = nn.Sequential(nn.Linear(4096, num_classes), nn.Softmax(dim=1))
 model.classifier[6] = nn.Linear(4096, num_classes)
-
 print(model)
-
-
 
 if use_cuda:
     print('Using GPU')
@@ -123,7 +109,7 @@ def validation():
 
 def output_space():
     model.eval()
-    outputspace = np.zeros((20,20,20))
+    outputspace = np.zeros((num_classes,n_test,num_classes))
     j=0
     for data, target in val_loader:
         if use_cuda:
@@ -137,12 +123,9 @@ def output_space():
 for epoch in range(1, args.epochs + 1):
     train(epoch)
     validation()
-    #model_file = args.experiment + '/model_' + str(epoch) + '.pth'
-    #torch.save(model.state_dict(), model_file)
-    #print('\nSaved model to ' + model_file + '. You can run `python evaluate.py --model ' + model_file + '` to generate the Kaggle formatted csv file')
+
+model_file = args.experiment + '/model_' + str(epoch) + '.pth'
+torch.save(model.state_dict(), model_file)
 
 outputspace = output_space()
-np.save('experiment/cnnfeat',outputspace)
-# to load : np.load('experiment/cnnfeat.npy')
-
-# everything is in the natural order
+np.save('experiment/cnnfeat',outputspace)    # to load : np.load('experiment/cnnfeat.npy')

@@ -2,28 +2,31 @@ from torch.utils.data import TensorDataset, DataLoader
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torchvision import datasets
-from torch.autograd import Variable
-import torchvision.models as models
 import torch.nn.functional as F
 import numpy as np
 
 LDA_train = np.load('experiment/lda_train.npy')
 LDA_validation = np.load('experiment/lda_val.npy')
 
+#TextNet settings
+n_epochs = 30
+batch_size = 64
+lr = 0.05
 
+# Data parameters
 n_cat = 20
 n_train = 30
 n_val = 20
 
+# Data initialization and loading
 tensor_y = torch.zeros(n_cat * n_train, dtype=torch.long)
 for i in range(n_train * n_cat):
     tensor_y[i] = int(np.floor(i/n_train))
 
 tensor_x = torch.stack([torch.Tensor(i) for i in LDA_train])
 
-my_dataset = TensorDataset(tensor_x,tensor_y) # create your datset
-train_loader = DataLoader(my_dataset, batch_size=64, shuffle=True, num_workers=1) # create your dataloader
+my_dataset = TensorDataset(tensor_x,tensor_y)
+train_loader = DataLoader(my_dataset, batch_size=batch_size, shuffle=True, num_workers=1)
 
 
 
@@ -33,8 +36,8 @@ for i in range(n_val * n_cat):
 
 tensor_x = torch.stack([torch.Tensor(i) for i in LDA_validation])
 
-my_dataset_val = TensorDataset(tensor_x,tensor_y_val) # create your datset
-val_loader = DataLoader(my_dataset_val, batch_size=20, num_workers=1) # create your dataloader
+my_dataset_val = TensorDataset(tensor_x,tensor_y_val)
+val_loader = DataLoader(my_dataset_val, batch_size=n_val, shuffle=False, num_workers=1)
 
 
 
@@ -45,9 +48,12 @@ if use_cuda:
 else:
     print('Using CPU')
 
-class Net(nn.Module):
+
+# Neural network and optimizer
+
+class TextNet(nn.Module):
     def __init__(self):
-        super(Net, self).__init__()
+        super(TextNet, self).__init__()
         self.fc1 = nn.Linear(100, 100)
         self.fc2 = nn.Linear(100, 50)
         self.fc3 = nn.Linear(50, 20)
@@ -60,12 +66,10 @@ class Net(nn.Module):
         x = self.fc4(x)
         return x
 
-model = Net()
-
-
+model = TextNet()
 
 # optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.5)
-optimizer = optim.Adam(model.parameters(), lr=0.05, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
+optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
 
 def train(epoch):
     model.train()
@@ -105,15 +109,15 @@ def validation():
         100. * correct / len(val_loader.dataset)))
 
 
-for epoch in range(1, 50 + 1):
+for epoch in range(1, n_epochs + 1):
     train(epoch)
     validation()
 
 
 def output_space():
     model.eval()
-    outputspace = np.zeros((20,20,20))
-    j=0
+    outputspace = np.zeros((n_cat,n_val,n_cat))
+    j = 0
     for data, target in val_loader:
         if use_cuda:
             data, target = data.cuda(), target.cuda()

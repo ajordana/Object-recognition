@@ -1,4 +1,5 @@
 import os
+import sys
 import random
 import numpy as np
 from tqdm import tqdm
@@ -10,6 +11,13 @@ num_category = 20
 
 N_train = 30
 N_test =-12
+
+
+if os.path.isdir('PascalSentenceDataset/validation_images/'):
+    sys.exit("validation folder already existing")
+
+
+
 os.chdir('PascalSentenceDataset/')
 list_category = os.listdir('dataset/')
 os.mkdir('validation_images/')
