@@ -82,7 +82,7 @@ val_corpus = [dictionary.doc2bow(text) for text in list_val_text_cleaned]
 
 # generate LDA model
 num_topics = 100
-ldamodel = gensim.models.ldamodel.LdaModel(corpus, num_topics=num_topics, id2word = dictionary, passes=20, dtype=np.float64)
+ldamodel = gensim.models.ldamodel.LdaModel(corpus, num_topics=num_topics, id2word = dictionary, passes=50, dtype=np.float64)
 
 total_distribution = []
 for x in corpus:

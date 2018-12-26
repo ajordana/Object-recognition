@@ -9,9 +9,9 @@ LDA_train = np.load('experiment/lda_train.npy')
 LDA_validation = np.load('experiment/lda_val.npy')
 
 #TextNet settings
-n_epochs = 30
+n_epochs = 40
 batch_size = 64
-lr = 0.05
+lr = 0.005
 
 # Data parameters
 n_cat = 20

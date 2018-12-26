@@ -19,7 +19,7 @@ if os.path.isdir('PascalSentenceDataset/validation_images/'):
 
 
 os.chdir('PascalSentenceDataset/')
-list_category = os.listdir('dataset/')
+list_category = sorted(os.listdir('dataset/'))[1:]
 os.mkdir('validation_images/')
 os.mkdir('validation_sentences/')
 
