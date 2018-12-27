@@ -21,7 +21,7 @@ parser.add_argument('--batch-size', type=int, default=64, metavar='B',
                     help='input batch size for training (default: 64)')
 parser.add_argument('--epochs', type=int, default=10, metavar='N',
                     help='number of epochs to train (default: 10)')
-parser.add_argument('--lr', type=float, default=0.03, metavar='LR',
+parser.add_argument('--lr', type=float, default=0.001, metavar='LR',
                     help='learning rate (default:)')
 parser.add_argument('--momentum', type=float, default=0.9, metavar='M',
                     help='SGD momentum (default: 0.5)')
@@ -43,12 +43,12 @@ if not os.path.isdir(args.experiment):
     os.makedirs(args.experiment)
 
 # Data initialization and loading
-from data import data_transforms
+from data import data_transforms, data_transforms_aug
 
 
 train_loader = torch.utils.data.DataLoader(
     datasets.ImageFolder(args.data + '/dataset',
-                         transform=data_transforms),
+                         transform=data_transforms_aug),
     batch_size=args.batch_size, shuffle=True, num_workers=1)
 
 val_loader = torch.utils.data.DataLoader(
@@ -75,7 +75,7 @@ else:
     print('Using CPU')
 
 # optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
-optimizer = optim.Adam(model.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
+optimizer = optim.Adam(model.parameters(), lr=args.lr, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
 
 def train(epoch):
     model.train()
