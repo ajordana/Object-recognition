@@ -23,6 +23,7 @@ def text2image(index_cat, index):
             P.append(float(tp)/float((tp+fp)))
     return np.mean(P)
 
+
 def image2text(index_cat, index):
     vec = cnnfeat[index_cat, index]
     L = np.array([np.linalg.norm(vec-text_features[i,j]) for i,j in itertools.product(range(n_cat), range(n_cat))])

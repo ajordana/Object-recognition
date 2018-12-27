@@ -19,7 +19,7 @@ parser.add_argument('--data', type=str, default='PascalSentenceDataset', metavar
                     help="folder where data is located. train_images/ and val_images/ need to be found in the folder")
 parser.add_argument('--batch-size', type=int, default=64, metavar='B',
                     help='input batch size for training (default: 64)')
-parser.add_argument('--epochs', type=int, default=5, metavar='N',
+parser.add_argument('--epochs', type=int, default=10, metavar='N',
                     help='number of epochs to train (default: 10)')
 parser.add_argument('--lr', type=float, default=0.03, metavar='LR',
                     help='learning rate (default:)')
@@ -27,11 +27,12 @@ parser.add_argument('--momentum', type=float, default=0.9, metavar='M',
                     help='SGD momentum (default: 0.5)')
 parser.add_argument('--seed', type=int, default=1, metavar='S',
                     help='random seed (default: 1)')
-parser.add_argument('--log-interval', type=int, default=10, metavar='N',
+parser.add_argument('--log-interval', type=int, default=1, metavar='N',
                     help='how many batches to wait before logging training status')
 parser.add_argument('--experiment', type=str, default='experiment', metavar='E',
                     help='folder where experiment outputs are located.')
 args = parser.parse_args()
+
 use_cuda = torch.cuda.is_available()
 torch.manual_seed(args.seed)
 
@@ -56,10 +57,15 @@ val_loader = torch.utils.data.DataLoader(
     batch_size=n_test, shuffle=False, num_workers=1)
 
 # Neural network and optimizer
-model = models.alexnet(pretrained=True)
-for param in model.parameters():
-    param.requires_grad = False
-model.classifier[6] = nn.Linear(4096, num_classes)
+
+model = models.resnet18(pretrained=True)
+num_ftrs = model.fc.in_features
+model.fc = nn.Linear(num_ftrs, num_classes)
+
+# model = models.alexnet(pretrained=True)
+# for param in model.parameters():
+#     param.requires_grad = False
+# model.classifier[6] = nn.Linear(4096, num_classes)
 print(model)
 
 if use_cuda:
@@ -69,7 +75,7 @@ else:
     print('Using CPU')
 
 # optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
-optimizer = optim.Adam(model.parameters(), lr=0.01, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
+optimizer = optim.Adam(model.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
 
 def train(epoch):
     model.train()
