@@ -16,7 +16,7 @@ punct = string.punctuation.replace('-', '')
 
 path_to_sentences = 'PascalSentenceDataset/sentence/'
 path_to_val_sentences = 'PascalSentenceDataset/validation_sentences/'
-categories_names = sorted(os.listdir(path_to_sentences))
+categories_names = sorted(os.listdir(path_to_sentences))[1:]
 
 list_text = []
 for category in categories_names:
