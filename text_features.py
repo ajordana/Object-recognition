@@ -9,8 +9,8 @@ LDA_train = np.load('experiment/lda_train.npy')
 LDA_validation = np.load('experiment/lda_val.npy')
 
 #TextNet settings
-n_epochs = 850
-batch_size = 64
+n_epochs = 80
+batch_size = 32
 lr = 0.001
 
 # Data parameters
@@ -106,8 +106,10 @@ def validation():
         validation_loss, correct, len(val_loader.dataset),
         100. * correct / len(val_loader.dataset)))
 
-
+l_mult = 0.9
 for epoch in range(1, n_epochs + 1):
+    if epoch % 4 == 0:
+        optimizer.param_groups[0]['lr'] = l_mult*optimizer.param_groups[0]['lr']
     train(epoch)
     validation()
 
