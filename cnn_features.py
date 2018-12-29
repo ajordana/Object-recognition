@@ -58,14 +58,14 @@ val_loader = torch.utils.data.DataLoader(
 
 # Neural network and optimizer
 
-model = models.resnet18(pretrained=True)
-num_ftrs = model.fc.in_features
-model.fc = nn.Linear(num_ftrs, num_classes)
+# model = models.resnet18(pretrained=True)
+# num_ftrs = model.fc.in_features
+# model.fc = nn.Linear(num_ftrs, num_classes)
 
-# model = models.alexnet(pretrained=True)
-# for param in model.parameters():
-#     param.requires_grad = False
-# model.classifier[6] = nn.Linear(4096, num_classes)
+model = models.alexnet(pretrained=True)
+for param in model.parameters():
+    param.requires_grad = False
+model.classifier[6] = nn.Linear(4096, num_classes)
 print(model)
 
 if use_cuda:
@@ -75,7 +75,14 @@ else:
     print('Using CPU')
 
 # optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
-optimizer = optim.Adam(model.parameters(), lr=args.lr, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
+# optimizer = optim.Adam(model.parameters(), lr=args.lr, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
+
+optimizer = optim.SGD([
+        {'params': model.features.parameters(), 'lr': 0.001},
+        {'params': model.classifier[1].parameters(), 'lr': 0.002},
+        {'params': model.classifier[4].parameters(), 'lr': 0.002},
+        {'params': model.classifier[6].parameters(), 'lr': 0.01}
+], lr=10**-2, momentum=0.9, weight_decay = 0.0005)
 
 def train(epoch):
     model.train()
@@ -126,7 +133,17 @@ def output_space():
     return outputspace
 
 
+initial_lr = [0.001,0.002,0.002,0.01]
+
+def adjust_learning_rate(optimizer, epoch):
+    """Sets the learning rate to the initial LR decayed by 10 every 20 epochs"""
+    optimizer.param_groups[0]['lr'] = initial_lr[0]*(0.1**(epoch // 20))
+    optimizer.param_groups[1]['lr'] = initial_lr[1]*(0.1**(epoch // 20))
+    optimizer.param_groups[2]['lr'] = initial_lr[2]*(0.1**(epoch // 20))
+    optimizer.param_groups[3]['lr'] = initial_lr[3]*(0.1**(epoch // 20))
+
 for epoch in range(1, args.epochs + 1):
+    adjust_learning_rate(optimizer, epoch)
     train(epoch)
     validation()
 
